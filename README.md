@@ -43,24 +43,24 @@ A layered Conditional Access strategy was designed, implemented, and validated t
 
 ---
 
-## 🧱 Architecture Overview
+## 🧱 Access Flow Architecture
 
+```mermaid
+flowchart TD
+    A[User Login Attempt] --> B[Microsoft Entra ID]
+    B --> C[Conditional Access Evaluation]
+    C --> D{MFA Required?}
+    D -->|Yes| E[MFA Verification]
+    D -->|No| F[Continue Evaluation]
+    E --> G{Device Compliant?}
+    F --> G
+    G -->|Yes| H[Risk Evaluation]
+    G -->|No| I[Access Blocked]
+    H --> J{Risk Level}
+    J -->|Low| K[Access Granted]
+    J -->|Medium or High| L[Require MFA or Additional Controls]
+    L --> K
 ```
-User Login
-   ↓
-Microsoft Entra ID
-   ↓
-Conditional Access Evaluation
-   ↓
-MFA Verification
-   ↓
-Device Compliance Check (Intune)
-   ↓
-Risk Evaluation (Identity Protection)
-   ↓
-Access Granted or Blocked
-```
-
 ## ⚙️ Conditional Access Policies
 
 | Policy Name | State | Purpose |
