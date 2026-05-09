@@ -1,170 +1,182 @@
 # 🔐 Azure Zero Trust Conditional Access Implementation
 
-## 🎯 Project Goal
-This project demonstrates the implementation and validation of a Zero Trust access control model using Microsoft Entra ID, Microsoft Intune, and Conditional Access policies.
+### Designing, implementing, and validating a layered Zero Trust access control model using Microsoft Entra ID, Intune, and Conditional Access — built from a clean tenant foundation with production-minded rollout methodology.
 
-The objective was to enforce secure access by requiring:
-- Verified user identity (Multi-Factor Authentication)
-- Trusted and compliant devices
-- Risk-based authentication controls
-
-All policies were tested and validated through real sign-in scenarios.
+> This project is the fourth entry in a connected Microsoft cloud portfolio series covering identity governance, endpoint management, security monitoring, and access control hardening.
 
 ---
 
-## 📌 Overview
-This project simulates a real-world enterprise environment where access to cloud resources is controlled using identity, device posture, and behavioral risk signals.
+## Overview
 
-A layered Conditional Access strategy was designed, implemented, and validated to ensure only secure and compliant entities are granted access.
+This project builds the access control and identity security layer on top of the same cloud-first organizational model established across Projects 1 through 3. Rather than configuring policies in isolation, the implementation starts from a clean Microsoft 365 tenant and constructs a realistic enterprise identity structure before any security controls are applied.
 
----
+The environment is built around **Northstar Identity** — a fictional professional services company using Microsoft 365 Business Premium. The business question:
 
-## 🧠 Key Concepts Implemented
-- Multi-Factor Authentication (MFA)
-- Device Compliance Enforcement (Microsoft Intune)
-- Risk-Based Conditional Access (Microsoft Entra Identity Protection)
-- Legacy Authentication Blocking
-- Break-Glass Account Strategy
-- Conditional Access Policy Design and Testing
-- Sign-in Log Analysis and Troubleshooting
+> *If something goes wrong — account compromise, unauthorized device access, suspicious login activity — does this organization have controls in place to prevent damage, detect it, and prove those controls were enforced?*
 
 ---
 
-## 🛠 Technologies Used
-- Microsoft Entra ID (Azure AD)
-- Microsoft Intune
-- Conditional Access Policies
-- Identity Protection (P2)
-- Azure Virtual Machines
-- Azure Virtual Network
-- Network Security Groups (NSGs)
-- Microsoft 365 Admin Center
-- Entra Sign-in Logs
+## Key Outcomes
+
+- Built a complete Microsoft 365 and Azure tenant from scratch under a single unified organizational identity
+- Designed an enterprise identity structure with security groups, admin separation, break-glass architecture, and department-level segmentation
+- Transitioned tenant security posture from Microsoft Security Defaults to a custom Conditional Access framework using staged rollout methodology
+- Implemented four Conditional Access policies covering MFA, privileged account protection, device compliance, and risk-based authentication
+- Enrolled an Azure-hosted Windows 11 VM (`NSI-WKS-001`) into Microsoft Intune and validated compliance enforcement end-to-end
+- Demonstrated real access blocking for non-compliant devices and confirmed enforcement through sign-in logs
+- Identified and corrected a critical policy misconfiguration where OR grant control logic allowed compliant-device bypass when MFA succeeded
+- Troubleshot real-world issues including cached token persistence, device identity correlation, TPM configuration, browser/session context, and Security Defaults migration timing
 
 ---
 
-## 🧱 Access Flow Architecture
+## Tenant Architecture
 
-```mermaid
-flowchart TD
-    A[User Login Attempt] --> B[Microsoft Entra ID]
-    B --> C[Conditional Access Evaluation]
-    C --> D{MFA Required?}
-    D -->|Yes| E[MFA Verification]
-    D -->|No| F[Continue Evaluation]
-    E --> G{Device Compliant?}
-    F --> G
-    G -->|Yes| H[Risk Evaluation]
-    G -->|No| I[Access Blocked]
-    H --> J{Risk Level}
-    J -->|Low| K[Access Granted]
-    J -->|Medium or High| L[Require MFA or Additional Controls]
-    L --> K
+```text
+Northstar Identity — northstarsystemidentity.onmicrosoft.com
+Microsoft 365 Business Premium + Entra ID P2 + Azure Subscription
+
+Identity Structure
+├── emmanueljohnson        (Tenant owner)
+├── ejohnson.admin         (Global Admin — daily operations)
+└── emergency.admin        (Break-glass — excluded from all CA)
+
+Department Users
+├── olivia.carter          (HR)
+├── james.wilson           (Finance)
+├── david.lee              (Executive)
+├── maya.thomas            (Operations)
+└── taylor.reed            (Contractor — separate governance)
+
+Security Groups
+├── SG-All-Employees               SG-Privileged-Admins
+├── SG-CA-Pilot-Users              SG-CA-Excluded-BreakGlass
+├── SG-Executives                  SG-Contractors
+├── SG-HR                          SG-Finance
 ```
 
-The diagram below provides a visual summary of the Zero Trust access decision flow implemented in this project.
-
-![Zero Trust Conditional Access Flow](assets/zero-trust-access-flow.png)
-
-## ⚙️ Conditional Access Policies
-
-| Policy Name | State | Purpose |
-|---|---|---|
-| CA-001-Require-MFA-Pilot-Users | Report-only | Validate MFA enforcement for pilot users |
-| CA-002-Require-MFA-Privileged-Admins | Report-only | Protect privileged accounts |
-| CA-003-Require-Compliant-Device-O365 | Enabled | Enforce device compliance for Microsoft 365 access |
-| CA-004-Risk-Based-MFA | Report-only | Evaluate risk-based authentication |
-| Microsoft Managed Policies | Enabled | Baseline security with MFA and legacy authentication protection |
+![Zero Trust Access Flow](assets/zero-trust-access-flow.png)
 
 ---
 
-## 💻 Intune Compliance Baseline
+## Conditional Access Policy Framework
 
-A Windows compliance policy was created to enforce minimum security standards.
+All policies follow the naming convention: `CA-[Number]-[Action]-[Scope]`
 
-### Compliance Requirements
-- Firewall enabled
-- Antivirus enabled
-- TPM enabled
-- Secure Boot enabled
-- BitLocker evaluated
-- General device security posture validated
+All custom policies were validated in report-only mode before enforcement was enabled.
 
----
+| Policy | State | Purpose |
+|--------|-------|---------|
+| CA-001-Require-MFA-Pilot-Users | Report-only | Validate MFA enforcement before broader rollout |
+| CA-002-Require-MFA-Privileged-Admins | Report-only | Dedicated MFA validation for admin accounts |
+| CA-003-Require-Compliant-Device-O365 | **Enabled** | Require Intune-compliant device for Microsoft 365 access |
+| CA-004-Risk-Based-MFA | Report-only | Require MFA when sign-in risk is Medium or High |
+| Microsoft-Managed Baseline Policies | **Enabled** | MFA for admins, MFA for Azure management, and legacy authentication blocking |
 
-## 🧪 Testing & Validation
+**Rollout Philosophy:** Pilot first → Report-only validation → Break-glass exclusion → Sign-in log review → Controlled enforcement.
 
-### ✅ Scenario 1: Compliant Device Access
-- Device enrolled into Intune
-- Device marked compliant
-- MFA completed successfully
-- Access to Microsoft 365 granted  
-
-**Result:** Access Allowed
+**Critical Finding — CA-003:** Grant controls must require ALL selected controls, not just one. When configured as “one of,” MFA success alone can grant access even when device compliance fails — a common misconfiguration that undermines Zero Trust enforcement.
 
 ---
 
-### ❌ Scenario 2: Non-Compliant Device Block
-- TPM disabled on test VM  
-- Device marked Non-Compliant in Intune  
-- Attempted sign-in to Microsoft 365  
+## Intune Compliance Baseline
 
-**Result:** Access Blocked  
+A Windows compliance policy (`CP-Windows-Baseline`) was deployed to `NSI-WKS-001`.
 
-**Validation:**
-- Conditional Access policy triggered  
-- Grant control (Require compliant device) failed  
-- Sign-in logs confirmed enforcement  
+| Control | Requirement |
+|---------|------------|
+| Firewall | Enabled |
+| Antivirus | Enabled |
+| TPM | Present and enabled |
+| Secure Boot | Enabled |
+| BitLocker | Evaluated |
 
----
+**TPM Issue:** After initial enrollment, TPM and Secure Boot showed `NotApplicable`. Root cause: the Azure VM required Trusted Launch / vTPM to be enabled at the hardware level. This was resolved by deallocating the VM, enabling the required security configuration, and re-syncing Intune.
 
-### 🔍 Scenario 3: Conditional Access Logic Validation
-
-During testing, policy behavior was evaluated to confirm correct enforcement logic.
-
-**Key Finding:**
-- If policies are configured to require “one of the selected controls,” access may be granted if MFA succeeds even when device compliance fails  
-- Proper configuration is required to enforce true Zero Trust behavior  
+**Device Trust Issue:** Initial sign-in tests showed the device context inconsistently in Conditional Access evaluation. This reinforced that browser/session state, cached authentication tokens, and device registration timing can affect whether Entra ID properly correlates a sign-in to an enrolled compliant device. Testing was completed using Firefox after forcing fresh sessions and allowing policy/device state to update.
 
 ---
 
-### 🧠 Scenario 4: Risk-Based Authentication
+## Testing & Validation
 
-A risk-based Conditional Access policy was created using Microsoft Entra Identity Protection.
+### ✅ Scenario 1 — Compliant Device Access
 
-### Configuration
-- Target: All users  
-- Risk level: Medium and High  
-- Control: Require MFA  
-- Mode: Report-only  
+Device compliant, MFA registered, and browser session refreshed.
 
-### Validation Approach
-- Tested multiple sign-in attempts  
-- Reviewed Identity Protection dashboard  
-- Analyzed sign-in logs  
-
-**Note:**  
-Due to limitations in simulating real-time identity risk in a lab environment, validation was performed using report-only evaluation and telemetry analysis.
+**Result:** Access granted — CA-003 evaluated successfully and grant controls were satisfied.
 
 ---
 
-## 📊 Key Findings
-- Conditional Access policies should be tested in report-only mode before enforcement  
-- Break-glass accounts are critical to prevent tenant lockout  
-- Device compliance adds a strong security layer beyond identity verification  
-- Policy logic (Require ALL vs ONE control) significantly impacts security outcomes  
-- Sign-in logs are essential for troubleshooting and validation  
-- Risk-based policies introduce adaptive security based on behavior  
+### ❌ Scenario 2 — Non-Compliant Device Block
+
+TPM disabled on `NSI-WKS-001`, Intune sync triggered, and device marked non-compliant.
+
+**Result:** Access blocked — CA-003 triggered, the `Require compliant device` grant control failed, and the result was confirmed in sign-in logs.
 
 ---
 
-## 📸 Evidence
+### 🔍 Scenario 3 — Policy Logic Validation
 
-### Conditional Access Policy Framework
-![Conditional Access Policies](evidence/phase2-conditional-access-policies/01-conditional-access-policy-inventory.png)
+**Finding:** OR grant control logic allowed access when MFA succeeded despite device non-compliance.
+
+**Fix:** Updated CA-003 to require ALL controls. This distinction — AND vs OR — is one of the most impactful and frequently misconfigured settings in Conditional Access.
+
+---
+
+### 🧠 Scenario 4 — Risk-Based Authentication
+
+CA-004 was configured for medium and high sign-in risk, MFA requirement, and report-only mode.
+
+**Result:** Policy logic was validated through sign-in telemetry and Identity Protection review.
+
+**Note:** Real-time risk simulation is limited in lab environments, so validation focused on report-only evaluation, configuration review, and telemetry analysis.
+
+---
+
+## Final Security Posture
+
+After full implementation, Northstar Identity operates under a layered Zero Trust access model.
+
+| Control Layer | Mechanism | State |
+|--------------|-----------|-------|
+| Identity | MFA through Microsoft-managed baseline policies and custom CA validation | Enforced / Validated |
+| Privileged Accounts | Dedicated admin MFA Conditional Access policy | Report-only |
+| Device Trust | Intune compliant device requirement for Microsoft 365 access | **Enforced** |
+| Legacy Authentication | Microsoft-managed legacy authentication blocking | **Enforced** |
+| Risk-Based Access | Medium and high risk sign-in evaluation | Report-only |
+| Emergency Access | Break-glass exclusion | Maintained |
+
+Access decisions are no longer based solely on credentials. They are evaluated dynamically using identity, device posture, and behavioral signals — aligning with modern Zero Trust principles.
+
+---
+
+## Key Lessons Learned
+
+- **Security Defaults must be disabled before relying on custom Conditional Access policy enforcement.** Custom CA policies showed `Not Applied` until the tenant was migrated away from Security Defaults.
+- **Cached tokens persist after policy changes.** Fresh authentication sessions were required to validate new policy behavior after disabling Security Defaults.
+- **Azure VM TPM requires Trusted Launch / vTPM configuration.** Intune compliance policies requiring TPM may show `NotApplicable` if the VM security configuration does not expose the required virtual hardware.
+- **Browser and session context affect device recognition.** Cached sessions, browser state, and device registration timing can affect whether Entra ID correlates a sign-in to a managed compliant device.
+- **OR vs AND grant logic is a critical distinction.** Grant control configuration must be reviewed carefully before enabling enforcement.
+- **Risk-based Conditional Access is powerful but difficult to simulate in a lab.** Report-only evaluation and sign-in telemetry were used to validate the intended behavior.
+
+---
+
+## Supporting Documentation
+
+- [Implementation Summary](docs/implementation-summary.md)
+- [Conditional Access Policy Summary](docs/conditional-access-policy-summary.md)
+- [Intune Compliance Summary](docs/intune-compliance-summary.md)
+- [Testing and Validation](docs/testing-and-validation.md)
+- [Lessons Learned](docs/lessons-learned.md)
+
+---
+
+## Evidence
+
+### Conditional Access Policy Inventory
+![CA Policies](evidence/phase2-conditional-access-policies/01-conditional-access-policy-inventory.png)
 
 ### Intune Managed Device
-![Intune Managed Device](evidence/phase3-intune-compliance/03-intune-device-compliant.png)
+![Intune Device](evidence/phase3-intune-compliance/03-intune-device-compliant.png)
 
 ### Compliance Policy Baseline
 ![Compliance Baseline](evidence/phase3-intune-compliance/05-compliance-policy-device-health.png)
@@ -172,26 +184,29 @@ Due to limitations in simulating real-time identity risk in a lab environment, v
 ### Non-Compliant Device
 ![Non-Compliant Device](evidence/phase4-testing-validation/01-device-noncompliant.png)
 
-### Conditional Access Enforcement Failure
-![Conditional Access Failure](evidence/phase4-testing-validation/05-ca003-grant-control-not-satisfied.png)
+### CA-003 Grant Control Failure
+![Grant Control Failure](evidence/phase4-testing-validation/05-ca003-grant-control-not-satisfied.png)
 
-### Identity Protection / Risk-Based Conditional Access
-![Risk-Based Conditional Access](evidence/phase4-testing-validation/07-identity-protection-dashboard.png)
-
----
-
-## 🚀 Future Improvements
-- Integrate Microsoft Sentinel for monitoring and alerting  
-- Develop KQL queries for failed Conditional Access events  
-- Implement geo-location based access restrictions  
-- Expand Intune configuration profiles  
-- Deploy endpoint security baselines  
-- Automate compliance remediation with scripts  
+### Identity Protection Dashboard
+![Identity Protection](evidence/phase4-testing-validation/07-identity-protection-dashboard.png)
 
 ---
 
-## 👨🏽‍💻 Author
+## Portfolio Connection
+
+| Project | Focus | Key Technologies |
+|---------|-------|-----------------|
+| 1 | Identity Governance | Entra ID, Graph PowerShell |
+| 2 | Endpoint Management | Intune, Azure VMs, Compliance |
+| 3 | Security Monitoring | Sentinel, KQL, Logic Apps |
+| 4 | Zero Trust Access Control | Conditional Access, Identity Protection |
+
+[Project 1](https://github.com/EJCyber/azure-identity-governance) · [Project 2](https://github.com/EJCyber/azure-cloud-endpoint-management) · [Project 3](https://github.com/EJCyber/Azure-Cloud-Security-Monitoring-and-Threat-Visibility)
+
+---
+
+## Author
 
 **Emmanuel Johnson**  
-IT Support Specialist  
-Aspiring Systems Administrator | Cybersecurity Professional  
+Systems & Cloud Administrator | Microsoft 365 | Entra ID | Identity & Endpoint Security  
+📎 [LinkedIn](https://linkedin.com/in/emmanuel-a-johnson) | 💻 [GitHub](https://github.com/EJCyber)
