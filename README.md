@@ -159,9 +159,6 @@ Due to limitations in simulating real-time identity risk in a lab environment, v
 
 ## 📸 Evidence
 
-### Zero Trust Access Flow
-![Zero Trust Conditional Access Flow](assets/zero-trust-access-flow.png)
-
 ### Conditional Access Policy Framework
 ![Conditional Access Policies](evidence/phase2-conditional-access-policies/01-conditional-access-policy-inventory.png)
 
