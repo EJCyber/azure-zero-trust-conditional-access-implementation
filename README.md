@@ -61,6 +61,10 @@ flowchart TD
     J -->|Medium or High| L[Require MFA or Additional Controls]
     L --> K
 ```
+The diagram below provides a visual summary of the Zero Trust access decision flow implemented in this project.
+
+![Zero Trust Conditional Access Flow](assets/zero-trust-access-flow.png)
+
 ## ⚙️ Conditional Access Policies
 
 | Policy Name | State | Purpose |
@@ -153,25 +157,28 @@ Due to limitations in simulating real-time identity risk in a lab environment, v
 
 ---
 
-## 📸 Screenshots
+## 📸 Evidence
 
-### Conditional Access Policies
-![Conditional Access Policies](images/conditional-access-policies.png)
+### Zero Trust Access Flow
+![Zero Trust Conditional Access Flow](assets/zero-trust-access-flow.png)
 
-### Intune Device Compliance
-![Intune Device Compliance](images/intune-device-compliance.png)
+### Conditional Access Policy Framework
+![Conditional Access Policies](evidence/phase2-conditional-access-policies/01-conditional-access-policy-inventory.png)
+
+### Intune Managed Device
+![Intune Managed Device](evidence/phase3-intune-compliance/03-intune-device-compliant.png)
+
+### Compliance Policy Baseline
+![Compliance Baseline](evidence/phase3-intune-compliance/05-compliance-policy-device-health.png)
 
 ### Non-Compliant Device
-![Non-Compliant Device](images/noncompliant-device.png)
+![Non-Compliant Device](evidence/phase4-testing-validation/01-device-noncompliant.png)
 
-### Blocked Sign-in Attempt
-![Blocked Sign-in](images/blocked-signin.png)
+### Conditional Access Enforcement Failure
+![Conditional Access Failure](evidence/phase4-testing-validation/05-ca003-grant-control-not-satisfied.png)
 
-### Conditional Access Failure Details
-![Conditional Access Failure](images/conditional-access-failure.png)
-
-### Risk-Based Policy Configuration
-![Risk-Based Policy](images/risk-policy.png)
+### Identity Protection / Risk-Based Conditional Access
+![Risk-Based Conditional Access](evidence/phase4-testing-validation/07-identity-protection-dashboard.png)
 
 ---
 
