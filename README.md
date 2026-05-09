@@ -61,6 +61,7 @@ flowchart TD
     J -->|Medium or High| L[Require MFA or Additional Controls]
     L --> K
 ```
+
 The diagram below provides a visual summary of the Zero Trust access decision flow implemented in this project.
 
 ![Zero Trust Conditional Access Flow](assets/zero-trust-access-flow.png)
@@ -68,12 +69,12 @@ The diagram below provides a visual summary of the Zero Trust access decision fl
 ## ⚙️ Conditional Access Policies
 
 | Policy Name | State | Purpose |
-|------------|------|--------|
+|---|---|---|
 | CA-001-Require-MFA-Pilot-Users | Report-only | Validate MFA enforcement for pilot users |
 | CA-002-Require-MFA-Privileged-Admins | Report-only | Protect privileged accounts |
 | CA-003-Require-Compliant-Device-O365 | Enabled | Enforce device compliance for Microsoft 365 access |
 | CA-004-Risk-Based-MFA | Report-only | Evaluate risk-based authentication |
-| Microsoft Managed Policies | Enabled | Baseline security (MFA + legacy auth block) |
+| Microsoft Managed Policies | Enabled | Baseline security with MFA and legacy authentication protection |
 
 ---
 
